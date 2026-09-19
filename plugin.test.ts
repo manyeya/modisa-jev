@@ -53,6 +53,24 @@ test("an agent that stops to ask something gets an 'asks you' badge, gone once i
   await s.until("the badge to go", async () => (await badge(pane)) === undefined);
 }, 60_000);
 
+test("'? n ask you' in the status row counts agents asking you; its action goes to one; it drops when they work", async () => {
+  const segment = async () => (await s.ui()).status.find((x) => x.id === "ask");
+  expect(await segment()).toMatchObject({ text: "? 0 ask you", tone: "dim", action: "ask-you" });
+  expect((await s.modisa("plugin", "run", s.plugin, "ask-you")).stdout).toBe("no agent is asking you anything");
+
+  answer = (body) => ({ choice: body.questions.q.instructions.includes("stop") ? "asks_user" : "safe", confidence: 0.9 });
+  const a = await agent("questioner");
+  await a.set("working");
+  await a.set("idle");
+  await s.until("counted", async () => (await segment())?.text === "? 1 ask you");
+  expect((await segment())?.tone).toBe("blocked");
+  expect((await s.modisa("plugin", "run", s.plugin, "ask-you")).stdout).toBe("@questioner is asking you");
+  expect((await s.json<any[]>("pane", "list")).find((p) => p.name === "questioner")).toBeTruthy();
+
+  await a.set("working");
+  await s.until("dropped", async () => (await segment())?.text === "? 0 ask you");
+}, 60_000);
+
 test("a destructive permission prompt is badged; an unsure verdict isn't", async () => {
   answer = () => ({ choice: "destructive", confidence: 0.95 });
   const a = await agent("risky");

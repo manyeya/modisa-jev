@@ -21,7 +21,10 @@ second — the one question those rules can't answer, each time an agent's state
   badge; destructive also gets a system notification.
 - **Only when it's sure.** An answer under 70% confidence shows nothing, and neither does one that arrives after the
   agent has moved on.
-- **A badge lasts until the agent's state next changes**, or its process exits.
+- **`? n ask you` in the status row**, next to modisa's `! n need you`: the agents that stopped to ask you something.
+  modisa counts those as *done*, so they'd never show under *need you*. Click it (or run `modisa plugin run jev
+  ask-you`) to go to one; again for the next.
+- **A badge lasts until the agent's state next changes**, or its process exits. So does its place in *ask you*.
 
 ## Install
 

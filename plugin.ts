@@ -12,13 +12,29 @@ runPlugin(async (modisa) => {
   const gen = new Map<string, number>(); // instance → its state changes so far: a verdict for an older one is stale
   const badged = new Map<string, string>(); // pane → the instance its badge is for
   const recent: object[] = []; // the last verdicts, for `status`
+  const asking = new Map<string, { pane: string; instance: string; who: string }>(); // instance → an agent asking you something
+  let next = 0; // which asking agent `ask-you` goes to: it cycles through them
   let failure = "";
 
-  await modisa.hello({
-    status: () => ({ config: CONFIG, recent, lastError: failure || undefined }),
-  });
+  // "? n ask you" in the status row, next to modisa's "! n need you": agents that stopped to ask you something, which
+  // modisa counts as done. A click goes to one.
+  const showAsking = () =>
+    modisa.ui.status("ask", `? ${asking.size} ask you`, { tone: asking.size ? "blocked" : "dim", action: "ask-you" }).catch(() => {});
 
-  const clear = (pane: string) => {
+  await modisa.hello({
+    status: () => ({ config: CONFIG, recent, asking: [...asking.values()].map((a) => a.who), lastError: failure || undefined }),
+    "ask-you": async () => {
+      const all = [...asking.values()];
+      if (!all.length) return "no agent is asking you anything";
+      const a = all[next++ % all.length]!;
+      await modisa.request("pane.focus", { target: `${a.pane}:${a.instance}` });
+      return `${a.who} is asking you`;
+    },
+  });
+  await showAsking();
+
+  const clear = (pane: string, instance: string) => {
+    if (asking.delete(instance)) showAsking();
     if (!badged.has(pane)) return;
     badged.delete(pane);
     modisa.ui.clearBadge(pane).catch(() => {});
@@ -36,6 +52,7 @@ runPlugin(async (modisa) => {
     if (!label.badge) return;
     await modisa.ui.badge(e.pane, e.instance, label.badge, label.tone);
     badged.set(e.pane, e.instance);
+    if (v.choice === "asks_user") (asking.set(e.instance, { pane: e.pane, instance: e.instance, who }), showAsking());
     // it needs you either way, like a blocked agent: a system notification too, when the user has them on
     if (q === OUTCOME) await modisa.ui.toast(`${who} ${label.badge}`, { tone: label.tone, system: true });
     else if (v.choice === "destructive") await modisa.ui.toast(`${who} asks to do something destructive`, { tone: "warn", system: true });
@@ -44,10 +61,10 @@ runPlugin(async (modisa) => {
   await modisa.subscribe({
     onEvent: (event) => {
       if (!event.pane || !event.instance) return;
-      if (event.type === "process.exited") return clear(event.pane);
+      if (event.type === "process.exited") return clear(event.pane, event.instance);
       if (event.type !== "agent.state") return;
       gen.set(event.instance, (gen.get(event.instance) ?? 0) + 1);
-      if (badged.get(event.pane) === event.instance) clear(event.pane);
+      if (badged.get(event.pane) === event.instance || asking.has(event.instance)) clear(event.pane, event.instance);
       const stopped = (event.to === "idle" || event.to === "done") && (event.from === "working" || event.from === "blocked");
       const q = stopped ? OUTCOME : event.to === "blocked" ? RISK : undefined;
       if (!q) return;

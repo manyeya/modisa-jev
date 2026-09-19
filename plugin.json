@@ -1,9 +1,21 @@
 {
   "name": "jev",
   "protocol": 1,
-  "run": ["bun", "plugin.ts"],
+  "run": [
+    "bun",
+    "plugin.ts"
+  ],
   "description": "Why an agent stopped and how risky its prompt is, as a badge on its pane: TypeSafe's Jev reads the screen modisa's rules can't.",
   "actions": [
-    { "id": "status", "title": "Jev: last verdicts", "description": "the last verdicts, where the config lives, and the last error" }
+    {
+      "id": "status",
+      "title": "Jev: last verdicts",
+      "description": "the last verdicts, where the config lives, and the last error"
+    },
+    {
+      "id": "ask-you",
+      "title": "Jev: go to an agent asking you",
+      "description": "cycles through the agents that stopped to ask you something"
+    }
   ]
 }

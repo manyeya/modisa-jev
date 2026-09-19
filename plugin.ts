@@ -4,7 +4,7 @@
 // It only badges, never reports a state: a report takes the pane's one authority slot, which would override the
 // agent's own integration and freeze screen detection until released. Read AGENTS.md before changing it.
 import { runPlugin } from "./modisa-plugin";
-import { ask, readConfig, tail, OUTCOME, RISK, type Question } from "./jev";
+import { ask, readConfig, tail, withoutPrompts, OUTCOME, RISK, type Question } from "./jev";
 
 const CONFIG = `${Bun.env.MODISA_PLUGIN_CONFIG ?? import.meta.dir}/config.json`;
 
@@ -27,7 +27,7 @@ runPlugin(async (modisa) => {
   async function judge(e: { pane: string; instance: string; name?: string; harness?: string }, q: Question) {
     const mine = gen.get(e.instance);
     const { screen } = await modisa.request<{ screen: string }>("pane.read", { target: e.pane, lines: 1 });
-    const v = await ask(await readConfig(CONFIG), q, { agent: e.harness ?? "unknown coding agent", screen: tail(screen) });
+    const v = await ask(await readConfig(CONFIG), q, { agent: e.harness ?? "unknown coding agent", screen: tail(withoutPrompts(screen)) });
     const who = e.name ? `@${e.name}` : e.pane;
     recent.unshift({ at: new Date().toISOString(), pane: who, question: q.ask, ...v });
     recent.length = Math.min(recent.length, 20);

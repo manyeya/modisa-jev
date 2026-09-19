@@ -37,6 +37,22 @@ export async function readConfig(path: string, env = Bun.env): Promise<Config> {
 // The last `lines` lines of a screen: all that's sent.
 export const tail = (screen: string, lines = 40) => screen.trimEnd().split("\n").slice(-lines).join("\n");
 
+// The screen without what the human typed: a line starting with a prompt marker (codex's ›, claude's >) and its
+// indented continuation. Left in, "ask me a question" in the human's prompt reads to Jev as the agent asking.
+// ponytail: marker heuristic; an agent whose prompt has no marker still sends its prompt
+export function withoutPrompts(screen: string) {
+  let inPrompt = false;
+  return screen
+    .split("\n")
+    .filter((line) => {
+      if (/^\s*[›>] /.test(line)) return !(inPrompt = true);
+      if (inPrompt && /^\s{2,}\S/.test(line)) return false;
+      inPrompt = false;
+      return true;
+    })
+    .join("\n");
+}
+
 // One Choice question: the label Jev picked, and whether it's sure enough to act on.
 export async function ask(c: Config, q: Question, state: object): Promise<Verdict> {
   if (!c.key) throw new Error(`no API key: put {"apiKey": "..."} in the plugin's config.json or set TYPESAFE_API_KEY`);

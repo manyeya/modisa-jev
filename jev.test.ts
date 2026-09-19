@@ -1,6 +1,6 @@
 // The Jev call against a local fake: no session, no key, no network.
 import { test, expect, afterAll } from "bun:test";
-import { ask, readConfig, tail, OUTCOME, RISK } from "./jev";
+import { ask, readConfig, tail, withoutPrompts, OUTCOME, RISK } from "./jev";
 
 let reply: (body: any) => Response = () => Response.json({});
 const seen: { auth: string | null; body: any }[] = [];
@@ -46,4 +46,18 @@ test("config comes from the file, then the environment, then defaults; only the 
     await Bun.file(path).delete();
   }
   expect(tail("a\nb\nc\n\n", 2)).toBe("b\nc");
+});
+
+test("what the human typed is left out: the marker line and its indented continuation, not the agent's reply", () => {
+  const screen = [
+    "› Just ask me one question:",
+    "  tabs or spaces?",
+    "■ You've hit your usage limit.",
+    "  try again at 9:52 AM.",
+    "> another prompt",
+    "⏺ Should I add rate limiting?",
+    "  or leave it for later",
+    "› Ask Codex to do anything",
+  ].join("\n");
+  expect(withoutPrompts(screen)).toBe(["■ You've hit your usage limit.", "  try again at 9:52 AM.", "⏺ Should I add rate limiting?", "  or leave it for later"].join("\n"));
 });

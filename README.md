@@ -8,7 +8,7 @@ written per agent: it knows an agent is *idle* or *blocked*, not why. jev asks
 second — the one question those rules can't answer, each time an agent's state changes.
 
 ```
-┌ @codex ── out of credits ┐   ← stopped: a usage limit, not a finished turn
+┌ @codex ──── no credits ──┐   ← stopped: a usage limit, not a finished turn
 ┌ @claude ─── asks you ────┐   ← "done", but its last message asks you something
 ┌ @pi ───── destructive ───┐   ← blocked on a prompt that deletes or force-pushes (and a system notification)
 ┌ @qwen ──────── safe ─────┐   ← blocked on a read-only prompt: approve without reading

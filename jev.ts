@@ -6,13 +6,14 @@ export type Question = { ask: string; labels: Record<string, Label> };
 export type Verdict = { choice: string; confidence: number; sure: boolean };
 export type Config = { url: string; key?: string; model: string; min: number };
 
-// Choice labels → the description Jev reads, and the badge each shows (none for the unremarkable ones)
+// Choice labels → the description Jev reads, and the badge each shows (none for the unremarkable ones; modisa cuts a
+// badge at 12 characters)
 export const OUTCOME: Question = {
   ask: "Why did this coding agent stop and wait?",
   labels: {
     finished: { about: "the agent completed its turn and waits for a new instruction" },
     asks_user: { about: "the agent's last message asks the human a question or for a decision before it can continue", badge: "asks you", tone: "blocked" },
-    out_of_credits: { about: "the agent stopped because of a usage limit, quota, rate limit or billing problem", badge: "out of credits", tone: "warn" },
+    out_of_credits: { about: "the agent stopped because of a usage limit, quota, rate limit or billing problem", badge: "no credits", tone: "warn" },
     logged_out: { about: "the agent stopped because its login expired or authentication failed", badge: "logged out", tone: "warn" },
     crashed: { about: "the agent or its tooling crashed or hit an error it could not recover from", badge: "crashed", tone: "warn" },
   },

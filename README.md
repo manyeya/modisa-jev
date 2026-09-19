@@ -15,7 +15,7 @@ second — the one question those rules can't answer, each time an agent's state
 ```
 
 - **When an agent stops** (working or blocked → idle or done): did it finish, ask you something, run out of credits,
-  get logged out, or crash? Anything but *finished* gets a badge and a toast. An agent that ends its turn with a
+  get logged out, or crash? Anything but *finished* gets a badge, a toast and a system notification. An agent that ends its turn with a
   question in prose is no longer a quiet "done".
 - **When an agent blocks**: is what it asks to do safe (read-only), edits, network, or destructive? The pane gets a
   badge; destructive also gets a system notification.

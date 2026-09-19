@@ -36,7 +36,8 @@ runPlugin(async (modisa) => {
     if (!label.badge) return;
     await modisa.ui.badge(e.pane, e.instance, label.badge, label.tone);
     badged.set(e.pane, e.instance);
-    if (q === OUTCOME) await modisa.ui.toast(`${who} ${label.badge}`, { tone: label.tone });
+    // it needs you either way, like a blocked agent: a system notification too, when the user has them on
+    if (q === OUTCOME) await modisa.ui.toast(`${who} ${label.badge}`, { tone: label.tone, system: true });
     else if (v.choice === "destructive") await modisa.ui.toast(`${who} asks to do something destructive`, { tone: "warn", system: true });
   }
 
